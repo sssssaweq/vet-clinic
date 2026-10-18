@@ -1,0 +1,95 @@
+{
+  "model": "LogisticRegression",
+  "best_C": 0.01,
+  "features": [
+    "age",
+    "lactation_number",
+    "milk_yield",
+    "lameness_score",
+    "previous_examinations_count",
+    "diseases_last_6_months",
+    "has_chronic_disease",
+    "previous_sick",
+    "days_since_last_exam",
+    "is_winter_season"
+  ],
+  "split": {
+    "train": 350,
+    "validation": 100,
+    "test": 50
+  },
+  "metrics": {
+    "train@0.5": {
+      "threshold": 0.5,
+      "accuracy": 0.5742857142857143,
+      "precision": 0.5872093023255814,
+      "recall": 0.5642458100558659,
+      "f1": 0.5754985754985755,
+      "roc_auc": 0.6466072070306119,
+      "tn": 100,
+      "fp": 71,
+      "fn": 78,
+      "tp": 101
+    },
+    "train@0.6": {
+      "threshold": 0.6,
+      "accuracy": 0.5828571428571429,
+      "precision": 0.7704918032786885,
+      "recall": 0.26256983240223464,
+      "f1": 0.39166666666666666,
+      "roc_auc": 0.6466072070306119,
+      "tn": 157,
+      "fp": 14,
+      "fn": 132,
+      "tp": 47
+    },
+    "validation@0.5": {
+      "threshold": 0.5,
+      "accuracy": 0.59,
+      "precision": 0.5652173913043478,
+      "recall": 0.78,
+      "f1": 0.6554621848739496,
+      "roc_auc": 0.674,
+      "tn": 20,
+      "fp": 30,
+      "fn": 11,
+      "tp": 39
+    },
+    "validation@0.6": {
+      "threshold": 0.6,
+      "accuracy": 0.61,
+      "precision": 0.7037037037037037,
+      "recall": 0.38,
+      "f1": 0.4935064935064935,
+      "roc_auc": 0.674,
+      "tn": 42,
+      "fp": 8,
+      "fn": 31,
+      "tp": 19
+    },
+    "test@0.5": {
+      "threshold": 0.5,
+      "accuracy": 0.7,
+      "precision": 0.6818181818181818,
+      "recall": 0.967741935483871,
+      "f1": 0.8,
+      "roc_auc": 0.7011884550084889,
+      "tn": 5,
+      "fp": 14,
+      "fn": 1,
+      "tp": 30
+    },
+    "test@0.6": {
+      "threshold": 0.6,
+      "accuracy": 0.64,
+      "precision": 0.76,
+      "recall": 0.6129032258064516,
+      "f1": 0.6785714285714286,
+      "roc_auc": 0.7011884550084889,
+      "tn": 13,
+      "fp": 6,
+      "fn": 12,
+      "tp": 19
+    }
+  }
+}
