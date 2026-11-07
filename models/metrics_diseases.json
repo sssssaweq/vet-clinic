@@ -1,0 +1,646 @@
+{
+  "features": [
+    "age",
+    "lactation_number",
+    "milk_yield",
+    "lameness_score",
+    "previous_examinations_count",
+    "diseases_last_6_months",
+    "has_chronic_disease",
+    "previous_sick",
+    "days_since_last_exam",
+    "is_winter_season"
+  ],
+  "min_cases": 150,
+  "split": {
+    "train": 7000,
+    "validation": 2000,
+    "test": 1000
+  },
+  "diseases": {
+    "laminitis": {
+      "name": "Ламинит",
+      "best_C": 0.01,
+      "threshold": 0.29,
+      "cases": {
+        "train": 451,
+        "validation": 161,
+        "test": 83
+      },
+      "metrics": {
+        "validation": {
+          "threshold": 0.29,
+          "accuracy": 0.8925,
+          "precision": 0.3902439024390244,
+          "recall": 0.5962732919254659,
+          "f1": 0.47174447174447176,
+          "roc_auc": 0.877556327871953,
+          "tn": 1689,
+          "fp": 150,
+          "fn": 65,
+          "tp": 96
+        },
+        "test": {
+          "threshold": 0.29,
+          "accuracy": 0.874,
+          "precision": 0.32231404958677684,
+          "recall": 0.46987951807228917,
+          "f1": 0.38235294117647056,
+          "roc_auc": 0.819237692317799,
+          "tn": 835,
+          "fp": 82,
+          "fn": 44,
+          "tp": 39
+        }
+      },
+      "coefficients": {
+        "age": -0.060414972730782675,
+        "lactation_number": 0.013465539444090477,
+        "milk_yield": 0.1385781217648887,
+        "lameness_score": 0.9757508949653116,
+        "previous_examinations_count": 0.1110721448499232,
+        "diseases_last_6_months": -0.012149313644484266,
+        "has_chronic_disease": 0.31102898206112184,
+        "previous_sick": 0.216805660332369,
+        "days_since_last_exam": 0.057280581878095906,
+        "is_winter_season": -0.08399266234769422
+      }
+    },
+    "necrobacillosis": {
+      "name": "Некробактериоз",
+      "best_C": 0.03,
+      "threshold": 0.05,
+      "cases": {
+        "train": 184,
+        "validation": 96,
+        "test": 39
+      },
+      "metrics": {
+        "validation": {
+          "threshold": 0.05,
+          "accuracy": 0.7935,
+          "precision": 0.11990407673860912,
+          "recall": 0.5208333333333334,
+          "f1": 0.1949317738791423,
+          "roc_auc": 0.7325531775210085,
+          "tn": 1537,
+          "fp": 367,
+          "fn": 46,
+          "tp": 50
+        },
+        "test": {
+          "threshold": 0.05,
+          "accuracy": 0.818,
+          "precision": 0.08187134502923976,
+          "recall": 0.358974358974359,
+          "f1": 0.13333333333333333,
+          "roc_auc": 0.7596520718268898,
+          "tn": 804,
+          "fp": 157,
+          "fn": 25,
+          "tp": 14
+        }
+      },
+      "coefficients": {
+        "age": 0.25484441518991247,
+        "lactation_number": -0.0010212838864176567,
+        "milk_yield": -0.1655490037657396,
+        "lameness_score": 0.4795843090568275,
+        "previous_examinations_count": -0.1708471459946236,
+        "diseases_last_6_months": 0.18970865727664687,
+        "has_chronic_disease": -0.04305139083343392,
+        "previous_sick": 0.15060644981803498,
+        "days_since_last_exam": 0.0001769118394152672,
+        "is_winter_season": -0.16838522627870334
+      }
+    },
+    "hoof_rot": {
+      "name": "Копытная гниль",
+      "best_C": 0.03,
+      "threshold": 0.13,
+      "cases": {
+        "train": 299,
+        "validation": 80,
+        "test": 54
+      },
+      "metrics": {
+        "validation": {
+          "threshold": 0.13,
+          "accuracy": 0.898,
+          "precision": 0.14367816091954022,
+          "recall": 0.3125,
+          "f1": 0.1968503937007874,
+          "roc_auc": 0.7516796875,
+          "tn": 1771,
+          "fp": 149,
+          "fn": 55,
+          "tp": 25
+        },
+        "test": {
+          "threshold": 0.13,
+          "accuracy": 0.856,
+          "precision": 0.11864406779661017,
+          "recall": 0.25925925925925924,
+          "f1": 0.16279069767441862,
+          "roc_auc": 0.7009435439667998,
+          "tn": 842,
+          "fp": 104,
+          "fn": 40,
+          "tp": 14
+        }
+      },
+      "coefficients": {
+        "age": -0.06059779820921873,
+        "lactation_number": -0.027547235271179568,
+        "milk_yield": -0.10966791819769801,
+        "lameness_score": 0.6617694561451384,
+        "previous_examinations_count": 0.0018427748979332331,
+        "diseases_last_6_months": 0.10056268049977973,
+        "has_chronic_disease": 0.042585303301826846,
+        "previous_sick": 0.03264970621626405,
+        "days_since_last_exam": -0.0446088812862508,
+        "is_winter_season": 0.2452190968828676
+      }
+    },
+    "mastitis": {
+      "name": "Мастит",
+      "best_C": 0.01,
+      "threshold": 0.09,
+      "cases": {
+        "train": 351,
+        "validation": 117,
+        "test": 53
+      },
+      "metrics": {
+        "validation": {
+          "threshold": 0.09,
+          "accuracy": 0.807,
+          "precision": 0.14133333333333334,
+          "recall": 0.452991452991453,
+          "f1": 0.21544715447154472,
+          "roc_auc": 0.7359732378319739,
+          "tn": 1561,
+          "fp": 322,
+          "fn": 64,
+          "tp": 53
+        },
+        "test": {
+          "threshold": 0.09,
+          "accuracy": 0.826,
+          "precision": 0.15028901734104047,
+          "recall": 0.49056603773584906,
+          "f1": 0.23008849557522124,
+          "roc_auc": 0.7244326672112531,
+          "tn": 800,
+          "fp": 147,
+          "fn": 27,
+          "tp": 26
+        }
+      },
+      "coefficients": {
+        "age": 0.15149698774110512,
+        "lactation_number": 0.4182389575565488,
+        "milk_yield": 0.6246457285675246,
+        "lameness_score": -0.15798470442765655,
+        "previous_examinations_count": 0.049135748485778445,
+        "diseases_last_6_months": -0.011384400023761537,
+        "has_chronic_disease": -0.06385881209027224,
+        "previous_sick": 0.14447024699500322,
+        "days_since_last_exam": -0.028838132863028054,
+        "is_winter_season": -0.14638087412036876
+      }
+    },
+    "endometritis": {
+      "name": "Эндометрит",
+      "best_C": 0.1,
+      "threshold": 0.08,
+      "cases": {
+        "train": 149,
+        "validation": 61,
+        "test": 31
+      },
+      "metrics": {
+        "validation": {
+          "threshold": 0.08,
+          "accuracy": 0.924,
+          "precision": 0.1111111111111111,
+          "recall": 0.21311475409836064,
+          "f1": 0.14606741573033707,
+          "roc_auc": 0.712975253426221,
+          "tn": 1835,
+          "fp": 104,
+          "fn": 48,
+          "tp": 13
+        },
+        "test": {
+          "threshold": 0.08,
+          "accuracy": 0.947,
+          "precision": 0.10714285714285714,
+          "recall": 0.0967741935483871,
+          "f1": 0.1016949152542373,
+          "roc_auc": 0.7110090216052465,
+          "tn": 944,
+          "fp": 25,
+          "fn": 28,
+          "tp": 3
+        }
+      },
+      "coefficients": {
+        "age": -0.0725142967684688,
+        "lactation_number": 0.7685052621174125,
+        "milk_yield": -0.026577217750796557,
+        "lameness_score": -0.15319661743857108,
+        "previous_examinations_count": -0.07224340244104158,
+        "diseases_last_6_months": 0.16494311848488397,
+        "has_chronic_disease": -0.05223965861134357,
+        "previous_sick": 0.021316023581698488,
+        "days_since_last_exam": -0.0034716415689388506,
+        "is_winter_season": -0.3193697058969124
+      }
+    },
+    "ketosis": {
+      "name": "Кетоз",
+      "best_C": 0.03,
+      "threshold": 0.09,
+      "cases": {
+        "train": 189,
+        "validation": 88,
+        "test": 38
+      },
+      "metrics": {
+        "validation": {
+          "threshold": 0.09,
+          "accuracy": 0.8935,
+          "precision": 0.15846994535519127,
+          "recall": 0.32954545454545453,
+          "f1": 0.2140221402214022,
+          "roc_auc": 0.792684956257132,
+          "tn": 1758,
+          "fp": 154,
+          "fn": 59,
+          "tp": 29
+        },
+        "test": {
+          "threshold": 0.09,
+          "accuracy": 0.867,
+          "precision": 0.07964601769911504,
+          "recall": 0.23684210526315788,
+          "f1": 0.11920529801324503,
+          "roc_auc": 0.7130703578072,
+          "tn": 858,
+          "fp": 104,
+          "fn": 29,
+          "tp": 9
+        }
+      },
+      "coefficients": {
+        "age": -0.0504939321923067,
+        "lactation_number": 0.023837330009651762,
+        "milk_yield": -0.7029709171773726,
+        "lameness_score": -0.1892509918603693,
+        "previous_examinations_count": 0.01976934898264808,
+        "diseases_last_6_months": 0.11130992318199238,
+        "has_chronic_disease": -0.040103966574815346,
+        "previous_sick": 0.27365338556227675,
+        "days_since_last_exam": 0.12340489460592002,
+        "is_winter_season": -0.11502499674831486
+      }
+    },
+    "acidosis": {
+      "name": "Ацидоз рубца",
+      "best_C": 0.03,
+      "threshold": 0.06,
+      "cases": {
+        "train": 133,
+        "validation": 53,
+        "test": 30
+      },
+      "metrics": {
+        "validation": {
+          "threshold": 0.06,
+          "accuracy": 0.9545,
+          "precision": 0.14814814814814814,
+          "recall": 0.1509433962264151,
+          "f1": 0.14953271028037382,
+          "roc_auc": 0.7275053056952642,
+          "tn": 1901,
+          "fp": 46,
+          "fn": 45,
+          "tp": 8
+        },
+        "test": {
+          "threshold": 0.06,
+          "accuracy": 0.926,
+          "precision": 0.16666666666666666,
+          "recall": 0.36666666666666664,
+          "f1": 0.22916666666666666,
+          "roc_auc": 0.7238831615120275,
+          "tn": 915,
+          "fp": 55,
+          "fn": 19,
+          "tp": 11
+        }
+      },
+      "coefficients": {
+        "age": -0.03441555705907492,
+        "lactation_number": -0.03769531126676403,
+        "milk_yield": -0.4235876626848151,
+        "lameness_score": -0.06797594047359712,
+        "previous_examinations_count": 0.09366653660083864,
+        "diseases_last_6_months": 0.09061184168506238,
+        "has_chronic_disease": 0.050489146937559314,
+        "previous_sick": 0.0467290983443555,
+        "days_since_last_exam": -0.05681353866742008,
+        "is_winter_season": 0.0485178760375962
+      }
+    },
+    "hypocalcemia": {
+      "name": "Гипокальциемия",
+      "best_C": 0.01,
+      "threshold": 0.05,
+      "cases": {
+        "train": 90,
+        "validation": 62,
+        "test": 26
+      },
+      "metrics": {
+        "validation": {
+          "threshold": 0.05,
+          "accuracy": 0.9285,
+          "precision": 0.10679611650485436,
+          "recall": 0.1774193548387097,
+          "f1": 0.13333333333333333,
+          "roc_auc": 0.7330220713073005,
+          "tn": 1846,
+          "fp": 92,
+          "fn": 51,
+          "tp": 11
+        },
+        "test": {
+          "threshold": 0.05,
+          "accuracy": 0.942,
+          "precision": 0.11904761904761904,
+          "recall": 0.19230769230769232,
+          "f1": 0.14705882352941177,
+          "roc_auc": 0.7450639709366609,
+          "tn": 937,
+          "fp": 37,
+          "fn": 21,
+          "tp": 5
+        }
+      },
+      "coefficients": {
+        "age": 0.1422181938345762,
+        "lactation_number": 0.33549642180881734,
+        "milk_yield": -0.27711368525130275,
+        "lameness_score": -0.11911591782784155,
+        "previous_examinations_count": 0.05410682088944849,
+        "diseases_last_6_months": 0.04233282554256788,
+        "has_chronic_disease": -0.06848143728435674,
+        "previous_sick": 0.08359980523851711,
+        "days_since_last_exam": 0.000226887301445841,
+        "is_winter_season": -0.10650365928488913
+      }
+    },
+    "avitaminosis": {
+      "name": "Авитаминоз",
+      "best_C": 0.03,
+      "threshold": 0.05,
+      "cases": {
+        "train": 107,
+        "validation": 27,
+        "test": 22
+      },
+      "metrics": {
+        "validation": {
+          "threshold": 0.05,
+          "accuracy": 0.9865,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "roc_auc": 0.6007396144243584,
+          "tn": 1973,
+          "fp": 0,
+          "fn": 27,
+          "tp": 0
+        },
+        "test": {
+          "threshold": 0.05,
+          "accuracy": 0.978,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "roc_auc": 0.572690091094999,
+          "tn": 978,
+          "fp": 0,
+          "fn": 22,
+          "tp": 0
+        }
+      },
+      "coefficients": {
+        "age": 0.08875408192266611,
+        "lactation_number": -0.07992719406311266,
+        "milk_yield": -0.055413203260185104,
+        "lameness_score": -0.07085509723862976,
+        "previous_examinations_count": -0.10761795997228045,
+        "diseases_last_6_months": 0.03186662549247103,
+        "has_chronic_disease": 0.03553291459297548,
+        "previous_sick": -0.054112297788789634,
+        "days_since_last_exam": 0.02149030805767383,
+        "is_winter_season": 0.0736371573837207
+      }
+    },
+    "bronchopneumonia": {
+      "name": "Бронхопневмония",
+      "best_C": 0.01,
+      "threshold": 0.08,
+      "cases": {
+        "train": 352,
+        "validation": 64,
+        "test": 65
+      },
+      "metrics": {
+        "validation": {
+          "threshold": 0.08,
+          "accuracy": 0.822,
+          "precision": 0.08757062146892655,
+          "recall": 0.484375,
+          "f1": 0.14832535885167464,
+          "roc_auc": 0.6641674199380165,
+          "tn": 1613,
+          "fp": 323,
+          "fn": 33,
+          "tp": 31
+        },
+        "test": {
+          "threshold": 0.08,
+          "accuracy": 0.538,
+          "precision": 0.09572301425661914,
+          "recall": 0.7230769230769231,
+          "f1": 0.16906474820143885,
+          "roc_auc": 0.648868778280543,
+          "tn": 491,
+          "fp": 444,
+          "fn": 18,
+          "tp": 47
+        }
+      },
+      "coefficients": {
+        "age": -0.02431481776160774,
+        "lactation_number": -0.05146114514500419,
+        "milk_yield": -0.07954415333971944,
+        "lameness_score": -0.16638870661641642,
+        "previous_examinations_count": 0.11620210667071085,
+        "diseases_last_6_months": 0.010459135285740658,
+        "has_chronic_disease": 0.022063051202530843,
+        "previous_sick": 0.07119590127874678,
+        "days_since_last_exam": -0.0368392559943151,
+        "is_winter_season": 0.5779737063076433
+      }
+    },
+    "otitis": {
+      "name": "Отит",
+      "best_C": 0.3,
+      "threshold": 0.05,
+      "cases": {
+        "train": 127,
+        "validation": 34,
+        "test": 17
+      },
+      "metrics": {
+        "validation": {
+          "threshold": 0.05,
+          "accuracy": 0.977,
+          "precision": 0.07142857142857142,
+          "recall": 0.029411764705882353,
+          "f1": 0.041666666666666664,
+          "roc_auc": 0.6550326132487583,
+          "tn": 1953,
+          "fp": 13,
+          "fn": 33,
+          "tp": 1
+        },
+        "test": {
+          "threshold": 0.05,
+          "accuracy": 0.942,
+          "precision": 0.023255813953488372,
+          "recall": 0.058823529411764705,
+          "f1": 0.03333333333333333,
+          "roc_auc": 0.6383220633115911,
+          "tn": 941,
+          "fp": 42,
+          "fn": 16,
+          "tp": 1
+        }
+      },
+      "coefficients": {
+        "age": -0.09360658153707913,
+        "lactation_number": -0.027963862194029927,
+        "milk_yield": 0.029322574891741542,
+        "lameness_score": -0.17870707367283012,
+        "previous_examinations_count": 0.12203528856512266,
+        "diseases_last_6_months": 0.14736083303354067,
+        "has_chronic_disease": 0.17294930668657976,
+        "previous_sick": 0.005870886419656931,
+        "days_since_last_exam": 0.012268570851545743,
+        "is_winter_season": 0.31433680994629276
+      }
+    },
+    "paratuberculosis": {
+      "name": "Паратуберкулез",
+      "best_C": 0.1,
+      "threshold": 0.12,
+      "cases": {
+        "train": 162,
+        "validation": 77,
+        "test": 52
+      },
+      "metrics": {
+        "validation": {
+          "threshold": 0.12,
+          "accuracy": 0.923,
+          "precision": 0.18699186991869918,
+          "recall": 0.2987012987012987,
+          "f1": 0.23,
+          "roc_auc": 0.7905396735349934,
+          "tn": 1823,
+          "fp": 100,
+          "fn": 54,
+          "tp": 23
+        },
+        "test": {
+          "threshold": 0.12,
+          "accuracy": 0.896,
+          "precision": 0.20454545454545456,
+          "recall": 0.34615384615384615,
+          "f1": 0.2571428571428571,
+          "roc_auc": 0.7811992859461214,
+          "tn": 878,
+          "fp": 70,
+          "fn": 34,
+          "tp": 18
+        }
+      },
+      "coefficients": {
+        "age": 0.8042908152342113,
+        "lactation_number": -0.01819217235860072,
+        "milk_yield": 0.12662467549347906,
+        "lameness_score": -0.3614222041813682,
+        "previous_examinations_count": -0.10527098606038161,
+        "diseases_last_6_months": 0.019116658544147624,
+        "has_chronic_disease": 0.4160286989224924,
+        "previous_sick": 0.3328168683479625,
+        "days_since_last_exam": -0.21552727728886822,
+        "is_winter_season": -0.07032919664267208
+      }
+    },
+    "leukosis": {
+      "name": "Лейкоз",
+      "best_C": 0.3,
+      "threshold": 0.06,
+      "cases": {
+        "train": 95,
+        "validation": 43,
+        "test": 29
+      },
+      "metrics": {
+        "validation": {
+          "threshold": 0.06,
+          "accuracy": 0.902,
+          "precision": 0.10362694300518134,
+          "recall": 0.46511627906976744,
+          "f1": 0.1694915254237288,
+          "roc_auc": 0.7793965609440173,
+          "tn": 1784,
+          "fp": 173,
+          "fn": 23,
+          "tp": 20
+        },
+        "test": {
+          "threshold": 0.06,
+          "accuracy": 0.888,
+          "precision": 0.0891089108910891,
+          "recall": 0.3103448275862069,
+          "f1": 0.13846153846153847,
+          "roc_auc": 0.7362477360701729,
+          "tn": 879,
+          "fp": 92,
+          "fn": 20,
+          "tp": 9
+        }
+      },
+      "coefficients": {
+        "age": 0.7193030739718206,
+        "lactation_number": 0.13411345076193787,
+        "milk_yield": -0.20769512561981626,
+        "lameness_score": -0.16058685465408098,
+        "previous_examinations_count": -0.1965946850191454,
+        "diseases_last_6_months": -0.10815762941954958,
+        "has_chronic_disease": 0.33506653448314927,
+        "previous_sick": 0.5229378982028832,
+        "days_since_last_exam": -0.15335382206478493,
+        "is_winter_season": -0.24846111586962683
+      }
+    }
+  }
+}

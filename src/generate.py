@@ -1,19 +1,23 @@
-
 """
 Генератор синтетических данных для информационной системы
 учёта ветеринарных осмотров молочного КРС.
 
 Данные специально генерируются как временная история:
-- 100 животных;
-- 500 последовательных осмотров;
+- 400 животных;
+- 10000 последовательных осмотров;
 - 10 ветеринаров;
-- 21 диагноз (20 болезней + "Здоров");
-- период наблюдения: 2023-01-01 — 2025-10-01.
+- 21 диагноз (20 болезней + "Здоров"), болезни объединены в 5 групп;
+- период наблюдения: 2023-01-01 — 2025-12-31 (прогноз строится на 2026 год).
 
 Основная идея:
 каждый осмотр является фактическим результатом в определённый момент времени.
-В дальнейшем модель сможет использовать предыдущие осмотры животного
+В дальнейшем модель использует предыдущие осмотры животного
 для прогноза риска заболевания на следующем осмотре.
+
+ВАЖНО: связи «признак -> конкретная болезнь» ЗАДАНЫ ЗДЕСЬ ВРУЧНУЮ
+по ветеринарной логике (см. DISEASE_RULES и функцию disease_scores).
+Это синтетические данные, а не реальные наблюдения: модель машинного
+обучения затем проверяет, способна ли она восстановить заложенные связи.
 
 Файлы:
     data/animals.csv
@@ -39,23 +43,24 @@ SEED = 42
 random.seed(SEED)
 np.random.seed(SEED)
 
-N_ANIMALS = 100
-N_EXAMINATIONS = 500
+N_ANIMALS = 400
+N_EXAMINATIONS = 10000
 N_VETS = 10
 
 DATA_DIR = "data"
 
 START_DATE = date(2023, 1, 1)
-END_DATE = date(2025, 10, 1)
+END_DATE = date(2025, 12, 31)
 
 BREED = "Голштинская"
 GENDER = "female"
 
-# Базовая доля здоровых осмотров.
-# Фактическая доля может немного отличаться, поскольку
-# вероятность болезни зависит от характеристик животного
-# и его истории.
-BASE_SICK_PROBABILITY = 0.30
+# Зимние и переходные месяцы: риск болезней органов дыхания и общий риск выше.
+WINTER_MONTHS = [1, 2, 3, 11, 12]
+
+# Нормировка удоя для расчёта влияния на группы болезней.
+MILK_MEAN = 7500
+MILK_STD = 1200
 
 
 # ============================================================
@@ -111,18 +116,61 @@ DIAGNOSES = [
     ("Пироплазмоз", 0),
 ]
 
+HEALTHY_GROUP = "Здоров"
 
-TREATMENTS = [
-    "Антибиотик",
-    "Витамины",
-    "Противовоспалительное",
-    "Покой",
-    "Смена корма",
-    "Обработка копыт",
-    "Гормональная терапия",
-    "Инфузия",
-    "Пробиотики",
-]
+# Группы болезней. Модель прогнозирует риск каждой группы отдельно.
+DISEASE_GROUPS = {
+    "Копыта и конечности": [
+        "Ламинит",
+        "Некробактериоз",
+        "Копытная гниль",
+    ],
+    "Вымя и размножение": [
+        "Мастит",
+        "Эндометрит",
+    ],
+    "Обмен веществ и пищеварение": [
+        "Кетоз",
+        "Ацидоз рубца",
+        "Тимпания рубца",
+        "Гипокальциемия",
+        "Авитаминоз",
+        "Травматический ретикулит",
+    ],
+    "Органы дыхания и чувств": [
+        "Бронхопневмония",
+        "Отит",
+        "Конъюнктивит",
+    ],
+    "Инфекции и паразиты": [
+        "Паратуберкулез",
+        "Лейкоз",
+        "Туберкулез",
+        "Бруцеллез",
+        "Ящур",
+        "Пироплазмоз",
+    ],
+}
+
+# Лечение подбирается по группе болезни.
+TREATMENTS_BY_GROUP = {
+    "Копыта и конечности": ["Обработка копыт", "Противовоспалительное", "Антибиотик"],
+    "Вымя и размножение": ["Антибиотик", "Гормональная терапия", "Противовоспалительное"],
+    "Обмен веществ и пищеварение": ["Смена корма", "Витамины", "Инфузия", "Пробиотики"],
+    "Органы дыхания и чувств": ["Антибиотик", "Противовоспалительное", "Покой"],
+    "Инфекции и паразиты": ["Антибиотик", "Покой", "Противовоспалительное"],
+}
+
+# Какая болезнь к какой группе относится: название -> группа.
+GROUP_OF_DISEASE = {
+    disease: group
+    for group, diseases in DISEASE_GROUPS.items()
+    for disease in diseases
+}
+
+assert set(GROUP_OF_DISEASE) == {name for name, _ in DIAGNOSES if name != "Здоров"}, (
+    "Каждая болезнь должна входить ровно в одну группу"
+)
 
 
 VET_NAMES = [
@@ -142,12 +190,6 @@ VET_NAMES = [
 # ============================================================
 # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 # ============================================================
-
-def random_date_between(start_date: date, end_date: date) -> date:
-    """Возвращает случайную дату между двумя датами."""
-    days = (end_date - start_date).days
-    return start_date + timedelta(days=random.randint(0, days))
-
 
 def calculate_age(birth_date: date, exam_date: date) -> int:
     """Возраст животного в полных годах на дату осмотра."""
@@ -170,6 +212,13 @@ def clamp(value, minimum, maximum):
 def sigmoid(x):
     """Сигмоидальная функция."""
     return 1 / (1 + np.exp(-x))
+
+
+def softmax(values):
+    """Превращает набор чисел в вероятности, дающие в сумме 1."""
+    values = np.array(values, dtype=float)
+    values = np.exp(values - values.max())
+    return values / values.sum()
 
 
 # ============================================================
@@ -203,7 +252,7 @@ def generate_vets():
 # ============================================================
 
 def generate_diagnoses():
-    """Создаёт справочник диагнозов."""
+    """Создаёт справочник диагнозов с указанием группы болезни."""
 
     diagnoses = []
 
@@ -216,6 +265,7 @@ def generate_diagnoses():
                 "diagnosis_id": diagnosis_id,
                 "name": name,
                 "is_chronic": is_chronic,
+                "disease_group": GROUP_OF_DISEASE.get(name, HEALTHY_GROUP),
             }
         )
 
@@ -302,12 +352,37 @@ def generate_initial_lameness():
     )[0]
 
 
+# Насколько (кг) падает удой на следующем осмотре после болезни: (минимум, максимум).
+# Это ручная настройка генератора: так задана связь «болезнь -> удой».
+# Для болезней, которых нет в MILK_DROP_BY_DISEASE, берётся значение по группе.
+MILK_DROP_BY_DISEASE = {
+    "Мастит": (300, 800),             # мастит сильнее всего снижает удой
+    "Кетоз": (250, 600),
+    "Гипокальциемия": (250, 600),
+    "Ацидоз рубца": (200, 500),
+    "Эндометрит": (150, 400),
+    "Бронхопневмония": (100, 300),
+}
+MILK_DROP_BY_GROUP = {
+    "Вымя и размножение": (150, 400),
+    "Обмен веществ и пищеварение": (100, 350),
+    "Инфекции и паразиты": (100, 350),
+    "Копыта и конечности": (50, 250),
+    "Органы дыхания и чувств": (30, 150),
+}
+
+# Вероятность того, что после болезни копыт хромота усилится на 1 балл.
+HOOF_LAMENESS_BUMP = 0.65
+
+
 def update_dynamic_features(
     age,
     lactation_number,
     milk_yield,
     lameness_score,
     previous_sick,
+    days_since_previous,
+    previous_disease=None,
 ):
     """
     Немного изменяет динамические характеристики
@@ -315,19 +390,28 @@ def update_dynamic_features(
 
     Таким образом, данные не являются полностью независимыми:
     состояние животного зависит от его предыдущего состояния.
+
+    Осмотров на животное теперь много, поэтому показатели
+    «возвращаются к норме», а не уходят в крайние значения.
     """
 
-    # Удой постепенно меняется.
-    milk_change = random.randint(-500, 500)
+    # Удой колеблется вокруг среднего значения (притяжение к норме 8%).
+    milk_change = random.randint(-800, 800) + 0.08 * (8400 - milk_yield)
 
-    # После болезни удой с некоторой вероятностью снижается.
+    # После болезни удой снижается; величина зависит от группы болезни.
     if previous_sick:
-        milk_change -= random.randint(100, 600)
+        low, high = MILK_DROP_BY_DISEASE.get(
+            previous_disease,
+            MILK_DROP_BY_GROUP.get(GROUP_OF_DISEASE.get(previous_disease), (30, 200)),
+        )
+        milk_change -= random.randint(low, high)
 
-    milk_yield = clamp(
-        milk_yield + milk_change,
-        4500,
-        11000,
+    milk_yield = int(
+        clamp(
+            milk_yield + milk_change,
+            4500,
+            11000,
+        )
     )
 
     # Хромота имеет некоторую инерцию.
@@ -339,8 +423,16 @@ def update_dynamic_features(
 
     # После болезни состояние может некоторое время
     # оставаться хуже.
-    if previous_sick and random.random() < 0.35:
+    if previous_sick and random.random() < 0.25:
         lameness_change += 1
+
+    # Болезни копыт и конечностей напрямую усиливают хромоту.
+    if GROUP_OF_DISEASE.get(previous_disease) == "Копыта и конечности" and random.random() < HOOF_LAMENESS_BUMP:
+        lameness_change += 1
+
+    # Хромота со временем лечится: возврат к норме.
+    if lameness_score >= 1 and random.random() < 0.40:
+        lameness_change -= 1
 
     lameness_score = clamp(
         lameness_score + lameness_change,
@@ -348,12 +440,14 @@ def update_dynamic_features(
         5,
     )
 
-    # Лактация увеличивается постепенно.
-    # Не на каждом осмотре, а с небольшой вероятностью.
-    if random.random() < 0.20:
+    # Новая лактация начинается примерно раз в 400 дней:
+    # чем больше прошло времени с прошлого осмотра, тем вероятнее.
+    # Номер лактации не может превышать возраст животного.
+    if random.random() < min(days_since_previous / 400, 1.0):
         lactation_number = min(
             lactation_number + 1,
             6,
+            max(age - 1, 1),
         )
 
     return (
@@ -399,8 +493,8 @@ def calculate_sick_probability(
     - предыдущий результат.
     """
 
-    # Базовый уровень риска.
-    score = -1.1
+    # Базовый уровень риска (осмотры частые, поэтому ниже, чем при редких).
+    score = -1.7
 
     # Возраст.
     if age >= 7:
@@ -423,7 +517,7 @@ def calculate_sick_probability(
         score += 0.15
 
     # Болезни за последние 6 месяцев.
-    score += diseases_last_6_months * 0.25
+    score += diseases_last_6_months * 0.15
 
     # Хроническое заболевание.
     if chronic_disease:
@@ -435,7 +529,7 @@ def calculate_sick_probability(
 
     # Сезонность.
     # Зимой и в переходные периоды риск немного выше.
-    if month in [1, 2, 3, 11, 12]:
+    if month in WINTER_MONTHS:
         score += 0.15
 
     probability = sigmoid(score)
@@ -451,10 +545,83 @@ def calculate_sick_probability(
 
 
 # ============================================================
+# ГРУППА БОЛЕЗНИ ЗАВИСИТ ОТ ПРИЗНАКОВ
+# ============================================================
+
+# Заложенные связи «признак -> конкретная болезнь» (по ветеринарной логике).
+# Баллы болезни = base + сумма (коэффициент * признак). Чем выше балл,
+# тем вероятнее, что у больной коровы выявят именно эту болезнь.
+#
+# Признаки:
+#   lameness  - балл хромоты (0-5);
+#   milk      - удой в «стандартных отклонениях» от среднего (выше среднего: плюс);
+#   lactation - номер лактации минус 3;
+#   age       - возраст минус 6;
+#   winter    - 1 в зимние и переходные месяцы, иначе 0 (отрицательный коэффициент: болезнь «летняя»).
+#
+# base задаёт, насколько болезнь частая (редкие: туберкулёз, бруцеллёз, ящур).
+DISEASE_RULES = {
+    # Копыта и конечности: хромота
+    "Ламинит":          {"base": -2.2, "lameness": 0.9, "milk": 0.4},
+    "Некробактериоз":   {"base": -1.9, "lameness": 0.6, "age": 0.2},
+    "Копытная гниль":   {"base": -1.8, "lameness": 0.6, "winter": 0.8},
+    # Вымя и размножение: высокий удой и число лактаций
+    "Мастит":           {"base": -0.6, "milk": 0.9, "lactation": 0.45},
+    "Эндометрит":       {"base": -1.3, "lactation": 0.55},
+    # Обмен веществ: низкий удой
+    "Кетоз":            {"base": -1.0, "milk": -0.9},
+    "Ацидоз рубца":     {"base": -1.4, "milk": -0.6, "winter": 0.5},
+    "Тимпания рубца":   {"base": -1.8, "milk": -0.5},
+    "Гипокальциемия":   {"base": -1.7, "milk": -0.4, "lactation": 0.5},
+    "Авитаминоз":       {"base": -1.6, "winter": 0.9},
+    "Травматический ретикулит": {"base": -2.0, "age": 0.25},
+    # Органы дыхания и чувств: зима (конъюнктивит - летом)
+    "Бронхопневмония":  {"base": -1.0, "winter": 1.8},
+    "Отит":             {"base": -1.5, "winter": 1.0},
+    "Конъюнктивит":     {"base": -1.3, "winter": -1.0},
+    # Инфекции и паразиты: возраст
+    "Паратуберкулез":   {"base": -1.8, "age": 0.5},
+    "Лейкоз":           {"base": -2.1, "age": 0.45},
+    "Туберкулез":       {"base": -3.0, "age": 0.3},
+    "Бруцеллез":        {"base": -3.0, "lactation": 0.3},
+    "Ящур":             {"base": -3.3, "winter": 0.6},
+    "Пироплазмоз":      {"base": -1.9, "winter": -1.3},
+}
+
+assert set(DISEASE_RULES) == set(GROUP_OF_DISEASE), "Для каждой болезни нужны правила"
+
+
+def disease_scores(age, lactation_number, milk_yield, lameness_score, month):
+    """Возвращает «баллы» каждой болезни по признакам животного."""
+
+    values = {
+        "lameness": lameness_score,
+        "milk": (milk_yield - MILK_MEAN) / MILK_STD,
+        "lactation": lactation_number - 3,
+        "age": age - 6,
+        "winter": 1 if month in WINTER_MONTHS else 0,
+    }
+
+    return {
+        disease: rule["base"]
+        + sum(coef * values[name] for name, coef in rule.items() if name != "base")
+        for disease, rule in DISEASE_RULES.items()
+    }
+
+
+# ============================================================
 # ДИАГНОЗ
 # ============================================================
 
-def choose_diagnosis(is_sick, previous_diagnosis_id):
+def choose_diagnosis(
+    is_sick,
+    previous_diagnosis_id,
+    age,
+    lactation_number,
+    milk_yield,
+    lameness_score,
+    month,
+):
     """
     Выбирает фактический диагноз.
 
@@ -462,10 +629,10 @@ def choose_diagnosis(is_sick, previous_diagnosis_id):
         diagnosis_id = 1
 
     Если больно:
-        выбирается один из 20 диагнозов.
-
-    При наличии хронического заболевания вероятность
-    повторного хронического диагноза увеличивается.
+        1. при предыдущем хроническом диагнозе с вероятностью 45%
+           диагноз повторяется;
+        2. иначе выбирается КОНКРЕТНАЯ болезнь: вероятность каждой
+           болезни зависит от признаков (см. DISEASE_RULES).
     """
 
     if not is_sick:
@@ -487,7 +654,12 @@ def choose_diagnosis(is_sick, previous_diagnosis_id):
         if random.random() < 0.45:
             return previous_diagnosis_id
 
-    return random.randint(2, len(DIAGNOSES))
+    # Выбор болезни по признакам.
+    scores = disease_scores(age, lactation_number, milk_yield, lameness_score, month)
+    diseases = list(scores)
+    disease = random.choices(diseases, weights=softmax(list(scores.values())), k=1)[0]
+
+    return [name for name, _ in DIAGNOSES].index(disease) + 1
 
 
 # ============================================================
@@ -496,16 +668,14 @@ def choose_diagnosis(is_sick, previous_diagnosis_id):
 
 def generate_examinations(animals_df):
     """
-    Создаёт 500 осмотров.
-
-    Основное отличие от предыдущей версии:
+    Создаёт осмотры.
 
     1. Для каждого животного создаётся последовательность
        осмотров.
     2. Осмотры идут строго по времени.
     3. Состояние животного постепенно меняется.
     4. Для каждого осмотра существует фактический результат
-       is_sick.
+       is_sick и диагноз.
     5. История предыдущих заболеваний используется только
        для генерации текущего результата.
 
@@ -593,6 +763,7 @@ def generate_examinations(animals_df):
 
         previous_sick = False
         previous_diagnosis_id = 1
+        previous_disease = None   # болезнь на прошлом осмотре (None - был здоров)
 
         # История болезни для формирования признаков.
         previous_examinations = []
@@ -620,6 +791,10 @@ def generate_examinations(animals_df):
                     milk_yield=milk_yield,
                     lameness_score=lameness_score,
                     previous_sick=previous_sick,
+                    days_since_previous=(
+                        exam_date - exam_dates[exam_index - 1]
+                    ).days,
+                    previous_disease=previous_disease,
                 )
 
             # ------------------------------------------------
@@ -678,10 +853,18 @@ def generate_examinations(animals_df):
             diagnosis_id = choose_diagnosis(
                 is_sick=is_sick,
                 previous_diagnosis_id=previous_diagnosis_id,
+                age=age,
+                lactation_number=lactation_number,
+                milk_yield=milk_yield,
+                lameness_score=lameness_score,
+                month=exam_date.month,
             )
 
             if is_sick:
-                treatment = random.choice(TREATMENTS)
+                disease_name = DIAGNOSES[diagnosis_id - 1][0]
+                treatment = random.choice(
+                    TREATMENTS_BY_GROUP[GROUP_OF_DISEASE[disease_name]]
+                )
             else:
                 treatment = "—"
 
@@ -741,6 +924,9 @@ def generate_examinations(animals_df):
 
             previous_sick = bool(is_sick)
             previous_diagnosis_id = diagnosis_id
+            previous_disease = (
+                DIAGNOSES[diagnosis_id - 1][0] if is_sick else None
+            )
 
             examination_id += 1
 
@@ -842,6 +1028,13 @@ def validate_data(animals, examinations):
     ).all():
         errors.append(
             "Обнаружен некорректный возраст."
+        )
+
+    if not examinations["lactation_number"].between(
+        1, 6
+    ).all():
+        errors.append(
+            "lactation_number должен быть от 1 до 6."
         )
 
     if errors:
@@ -1005,35 +1198,17 @@ def print_statistics(
 
     print()
 
-    print(
-        "Пример временной истории:"
-    )
+    sick_with_group = examinations[
+        examinations["is_sick"] == 1
+    ].merge(diagnoses, on="diagnosis_id")
 
-    example_animal = (
-        examinations["animal_id"]
-        .value_counts()
-        .idxmax()
-    )
+    print("Больные осмотры по группам болезней:")
+    for group, count in sick_with_group["disease_group"].value_counts().items():
+        print(f"  {group:<30} {count:>4} ({count / sick_count * 100:.1f}%)")
 
-    example = examinations[
-        examinations["animal_id"] == example_animal
-    ].sort_values("exam_date")
-
-    print(
-        example[
-            [
-                "animal_id",
-                "exam_date",
-                "age",
-                "lactation_number",
-                "milk_yield",
-                "lameness_score",
-                "diseases_last_6_months",
-                "is_sick",
-                "diagnosis_id",
-            ]
-        ].to_string(index=False)
-    )
+    print("\nБольные осмотры по болезням:")
+    for name, count in sick_with_group["name"].value_counts().items():
+        print(f"  {name:<30} {count:>4} ({count / sick_count * 100:.1f}%)")
 
     print("=" * 60)
 
@@ -1120,4 +1295,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
