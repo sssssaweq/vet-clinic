@@ -6,7 +6,7 @@ GO
 
 
 -- ============================================
--- ÂÅÒÅÐÈÍÀÐÛ
+-- ВЕТЕРИНАРЫ
 -- ============================================
 
 CREATE TABLE vets (
@@ -18,13 +18,13 @@ GO
 
 
 -- ============================================
--- ÆÈÂÎÒÍÛÅ
+-- ЖИВОТНЫЕ
 -- ============================================
 
 CREATE TABLE animals (
     animal_id INT PRIMARY KEY,
     nickname NVARCHAR(100) NOT NULL,
-    number INT NOT NULL UNIQUE,
+    number NVARCHAR(10) NOT NULL UNIQUE,   -- текст, чтобы сохранить ведущие нули (001)
     breed NVARCHAR(100) NOT NULL,
     gender NVARCHAR(20) NOT NULL,
     birth_date DATE NOT NULL
@@ -33,19 +33,20 @@ GO
 
 
 -- ============================================
--- ÄÈÀÃÍÎÇÛ
+-- ДИАГНОЗЫ
 -- ============================================
 
 CREATE TABLE diagnoses (
     diagnosis_id INT PRIMARY KEY,
     name NVARCHAR(150) NOT NULL,
-    is_chronic BIT NOT NULL
+    is_chronic BIT NOT NULL,
+    disease_group NVARCHAR(100) NOT NULL   -- группа болезни (для прогноза риска по группам)
 );
 GO
 
 
 -- ============================================
--- ÂÅÒÅÐÈÍÀÐÍÛÅ ÎÑÌÎÒÐÛ
+-- ВЕТЕРИНАРНЫЕ ОСМОТРЫ
 -- ============================================
 
 CREATE TABLE examinations (
